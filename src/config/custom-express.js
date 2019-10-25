@@ -1,20 +1,27 @@
 const express = require('express');
-const app = express();
-const routers = express.Router();
 
-//Logs
-let countLogs = 0;
+class CustomExpress{
 
-const createLog = (req, res, next) => {
-  countLogs += 1;
-  console.log(`Número de requisições: ${countLogs}`);
-  return next();
+  constructor(){
+    this.app = express();
+    this.countLogs = 0;
+    this.middlewares();
+  }
+
+  middlewares(){
+    this.app.use(express.json());
+    this.app.use(this.createLog.bind(this));
+    this.app.use(
+      '/projects',
+      require('../routers/routers-products')
+    );
+  }
+
+  createLog(req, res, next){
+    this.countLogs += 1;
+    console.log(`Número de requisições: ${this.countLogs}`);
+    return next();
+  }
 }
 
-app.use(express.json());
-app.use(createLog);
-
-//Routers
-app.use('/projects', require('../routers/routers-products')(routers));
-
-module.exports = app;
+module.exports = new CustomExpress().app;
